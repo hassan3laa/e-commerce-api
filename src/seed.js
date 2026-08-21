@@ -7,6 +7,7 @@ const User = require("./models/userModel");
 const Category = require("./models/categoryModel");
 const Brand = require("./models/brandModel");
 const Product = require("./models/productModel");
+const Coupon = require("./models/couponModel");
 
 const DB = process.env.DATABASE_URL;
 
@@ -20,6 +21,7 @@ const seed = async () => {
     await Category.deleteMany();
     await Brand.deleteMany();
     await Product.deleteMany();
+    await Coupon.deleteMany();
 
     // =========================
     // Users
@@ -135,6 +137,30 @@ const seed = async () => {
     ]);
 
     // =========================
+    // Coupons
+    // =========================
+
+    const coupons = await Coupon.create([
+      {
+        code: "WELCOME20",
+        type: "percentage",
+        value: 20,
+        minOrderAmount: 500,
+        maxDiscount: 1000,
+        expiresAt: new Date("2026-12-31"),
+        usageLimit: 100,
+      },
+      {
+        code: "SAVE500",
+        type: "fixed",
+        value: 500,
+        minOrderAmount: 2000,
+        expiresAt: new Date("2026-12-31"),
+        usageLimit: 50,
+      },
+    ]);
+
+    // =========================
     // Result
     // =========================
 
@@ -145,6 +171,8 @@ const seed = async () => {
     console.log(`Created ${brands.length} brands`);
 
     console.log(`Created ${products.length} products`);
+
+    console.log(`Created ${coupons.length} coupons`);
 
     console.log("\nSeed completed successfully.");
 

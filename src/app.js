@@ -1,7 +1,7 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
-const morgan = retuire("morgan");
+const morgan = require("morgan");
 
 const AppError = require("./utils/AppError");
 
@@ -15,8 +15,12 @@ const brandRoutes = require("./routes/brandRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const couponRoutes = require("./routes/couponRoutes");
 
 const app = express();
+
+app.set("query parser", "extended");
 
 app.use(helmet());
 
@@ -71,8 +75,12 @@ app.use("/api/v1/cart", cartRoutes);
 
 app.use("/api/v1/wishlist", wishlistRoutes);
 
-app.all("*", (req, res, next) => {
-  next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
+app.use("api/v1/orders", orderRoutes);
+
+app.use("/api/v1/coupons", couponRoutes);
+
+app.use((req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
 app.use(errorMiddleware);

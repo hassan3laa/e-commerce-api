@@ -20,7 +20,7 @@ const wishlistSchema = new mongoose.Schema(
   },
 );
 
-wishlistSchema.pref(/^find/, function (next) {
+wishlistSchema.pre(/^find/, function (next) {
   this.populate({
     path: "products",
     select: "name price discountPrice images ratingsAverage",

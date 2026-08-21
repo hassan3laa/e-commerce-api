@@ -1,17 +1,17 @@
 class APIFeatures {
-  constructor(query, querString) {
+  constructor(query, queryString) {
     this.query = query;
-    this.querString = querString;
+    this.queryString = queryString;
   }
 
   filter() {
-    const queryObj = { ...this.querString };
+    const queryObj = { ...this.queryString };
 
-    const execludeFields = ["page", "sort", "limit", "fields", "search"];
+    const excludeFields = ["page", "sort", "limit", "fields", "search"];
 
-    execludeFields.forEach((field) => delete queryObj[field]);
+    excludeFields.forEach((field) => delete queryObj[field]);
 
-    let queryStr = JSON.parse(queryObj);
+    let queryStr = JSON.stringify(queryObj);
 
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
@@ -42,9 +42,11 @@ class APIFeatures {
 
     return this;
   }
+
   sort() {
     if (this.queryString.sort) {
       const sortBy = this.queryString.sort.split(",").join(" ");
+
       this.query = this.query.sort(sortBy);
     } else {
       this.query = this.query.sort("-createdAt");

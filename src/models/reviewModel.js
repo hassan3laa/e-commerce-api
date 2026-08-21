@@ -43,7 +43,7 @@ reviewSchema.index(
   },
 );
 
-reviewSchema.pref(/^find/, function (next) {
+reviewSchema.pre(/^find/, function (next) {
   this.populate({
     path: "user",
     select: "name, photo",

@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const User = require("../models/userModel");
 
 const AppError = require("../utils/AppError");
@@ -68,5 +70,97 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   res.status(204).json({
     status: "success",
     data: null,
+  });
+});
+
+exports.changePassword = catchAsync(async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return next(
+      new AppError("Current password and new password are required.", 400),
+    );
+  }
+
+  const user = await User.findById(req.user.id).select("+password");
+
+  const correct = await user.correctPassword(currentPassword, user.password);
+
+  if (!correct) {
+    return next(new AppError("Current password is incorrect.", 401));
+  }
+
+  user.password = newPassword;
+
+  await user.save();
+
+  res.status(200).json({
+    status: "success",
+    message: "Password changed successfully.",
+  });
+});
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return next(new AppError("Email is required.", 400));
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return next(new AppError("There is no user with this email.", 404));
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  user.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  await user.save({
+    validateBeforeSave: false,
+  });
+
+  res.status(200).json({
+    status: "success",
+    message: "Password reset token generated.",
+    resetToken,
+  });
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+
+    passwordResetExpires: {
+      $gt: Date.now(),
+    },
+  }).select("+password");
+
+  if (!user) {
+    return next(new AppError("Token is invalid or has expired.", 400));
+  }
+
+  user.password = req.body.password;
+
+  user.passwordResetToken = undefined;
+
+  user.passwordResetExpires = undefined;
+
+  await user.save();
+
+  res.status(200).json({
+    status: "success",
+    message: "Password reset successfully.",
   });
 });

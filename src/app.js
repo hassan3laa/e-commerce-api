@@ -17,6 +17,9 @@ const cartRoutes = require("./routes/cartRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const couponRoutes = require("./routes/couponRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -38,6 +41,8 @@ const limiter = rateLimit({
 });
 
 app.use("/api", limiter);
+
+app.use("/api/v1/payments/webhook", express.raw({ type: "application/json" }));
 
 app.use(
   express.json({
@@ -75,9 +80,15 @@ app.use("/api/v1/cart", cartRoutes);
 
 app.use("/api/v1/wishlist", wishlistRoutes);
 
-app.use("api/v1/orders", orderRoutes);
+app.use("/api/v1/orders", orderRoutes);
 
 app.use("/api/v1/coupons", couponRoutes);
+
+app.use("/api/v1/payments", paymentRoutes);
+
+app.use("/api/v1/notifications", notificationRoutes);
+
+app.use("/api/v1/admin", adminRoutes);
 
 app.use((req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

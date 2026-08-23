@@ -7,7 +7,19 @@ class APIFeatures {
   filter() {
     const queryObj = { ...this.queryString };
 
-    const excludeFields = ["page", "sort", "limit", "fields", "search"];
+    const excludeFields = [
+      "page",
+      "sort",
+      "limit",
+      "fields",
+      "search",
+      "minPrice",
+      "maxPrice",
+      "category",
+      "brand",
+      "inStock",
+      "minRating",
+    ];
 
     excludeFields.forEach((field) => delete queryObj[field]);
 
@@ -69,6 +81,7 @@ class APIFeatures {
 
   paginate() {
     const page = parseInt(this.queryString.page, 10) || 1;
+
     const limit = parseInt(this.queryString.limit, 10) || 20;
 
     const skip = (page - 1) * limit;

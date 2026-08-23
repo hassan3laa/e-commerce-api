@@ -43,13 +43,11 @@ reviewSchema.index(
   },
 );
 
-reviewSchema.pre(/^find/, function (next) {
+reviewSchema.pre(/^find/, function () {
   this.populate({
     path: "user",
-    select: "name, photo",
+    select: "name photo",
   });
-
-  next();
 });
 
 module.exports = mongoose.model("Review", reviewSchema);

@@ -7,6 +7,7 @@ const Coupon = require("../models/couponModel");
 
 const AppError = require("../utils/AppError");
 const catchAsync = require("../utils/catchAsync");
+const createNotification = require("../utils/createNotification");
 
 const calculateShipping = (subtotal) => {
   return subtotal >= 1000 ? 0 : 100;
@@ -149,6 +150,8 @@ exports.createOrder = catchAsync(async (req, res, next) => {
 
     const totalPrice = subtotal - discount + shippingCost;
 
+    const initialStatus = paymentMethod === "cash" ? "confirmed" : "pending";
+
     const [order] = await Order.create(
       [
         {
@@ -161,6 +164,7 @@ exports.createOrder = catchAsync(async (req, res, next) => {
           totalPrice,
           coupon: coupon?._id,
           paymentMethod,
+          status: initialStatus,
           idempotencyKey,
         },
       ],
@@ -177,6 +181,16 @@ exports.createOrder = catchAsync(async (req, res, next) => {
     });
 
     await session.commitTransaction();
+
+    await createNotification({
+      user: req.user.id,
+      type: "order",
+      title: "Order Created",
+      message: `Your order ${order._id} has been created successfully.`,
+      data: {
+        orderId: order._id,
+      },
+    });
 
     res.status(201).json({
       status: "success",
@@ -323,6 +337,17 @@ exports.updateOrderStatus = catchAsync(async (req, res, next) => {
   }
 
   await order.save();
+
+  await createNotification({
+    user: order.user,
+    type: "order",
+    title: "Order Status Updated",
+    message: `Your order ${order._id} is now ${status}.`,
+    data: {
+      orderId: order._id,
+      status,
+    },
+  });
 
   res.status(200).json({
     status: "success",

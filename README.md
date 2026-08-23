@@ -26,9 +26,9 @@ e-commerce-api/
 │   ├── routes/
 │   ├── utils/
 │   ├── app.js
+│   ├── server.js
 │   └── seed.js
 │
-├── server.js
 ├── .env
 ├── .env.example
 ├── .gitignore
